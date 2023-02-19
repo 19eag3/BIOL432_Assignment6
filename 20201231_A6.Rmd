@@ -1,0 +1,85 @@
+---
+title: "A6"
+author: "Elliot Gavrin"
+date: "2023-02-15"
+output: html_document
+---
+[https://github.com/19eag3/BIOL432_Assignment6](https://github.com/19eag3/BIOL432_Assignment6)
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+Part 1
+4. 
+```{r}
+MyData <-read.csv("C:/Users/egavr/OneDrive/Documents/BIOL432/A6/Sequences.csv")
+NewData = subset(MyData, select = -c(Name))
+
+for (i in 2:nrow(NewData)) {
+  NewData[i, 2] <-sub(".*Borrelia", "", NewData[i, 2])
+  print(paste("Sequence", i-1))
+  print(paste(sub(".*Borrelia", "", NewData[i, 2])))
+  a_count <-(nchar(gsub("[^Aa]", "", NewData[i, 2])))
+  t_count <-(nchar(gsub("[^Tt]", "", NewData[i, 2])))
+  c_count <-(nchar(gsub("[^Cc]", "", NewData[i, 2])))
+  g_count <-(nchar(gsub("[^Gg]", "", NewData[i, 2])))
+  print(paste("A count:", a_count))
+  print(paste("T count:", t_count))
+  print(paste("C count:", c_count))
+  print(paste("G count:", g_count))
+  print("")
+  GC_count <-(((g_count + c_count)/(a_count + t_count + g_count + c_count)) * 100)
+  print(paste("GC count %:", GC_count))
+}
+```
+IMAGE AND WIKI
+![Image of borrelia burgdorferi]("C:/Users/egavr/OneDrive/Documents/BIOL432/A6/images/image.jfif")
+[https://en.wikipedia.org/wiki/Borrelia_burgdorferi](https://en.wikipedia.org/wiki/Borrelia_burgdorferi)
+
+Part 2
+```{r}
+library(BiocManager)
+library(seqinr)
+library(rentrez)
+
+# Set search term and database
+search_term <- "GCCTGATG"
+db <- "nucleotide"
+
+# Search GenBank for the closest matching sequence
+search_result <- entrez_search(db, search_term, retmax = 1)
+
+# Get the ID of the top result
+id <- search_result$ids
+
+# Extract the first hit's accession number
+hit_accession <- search_result$ids[[1]]
+
+# Fetch the sequence from GenBank using the accession number
+hit_seq <- rentrez::entrez_fetch(db="nucleotide", id=hit_accession, rettype="fasta")
+
+# Check if the closest matching sequence is human or not
+if(grepl("Homo sapiens", hit_seq)){
+  organism <- "human"
+} else {
+  organism <- "non-human"
+}
+
+# Compare the sequences
+alignment <- pairwiseAlignment(hit_seq[[1]], search_term)
+ident <- identity(alignment)
+
+
+# Generate a report
+report <- paste0("The closest matching sequence in GenBank is:\n\n", seq, "\n\n")
+report <- paste0(report, "The degree of similarity is ", round(ident@score*100, 2), "%.\n\n")
+report <- paste0(report, "The sequence is from a ", organism, " organism.")
+cat(report)
+```
+
+Based on this analysis, we can conclude that the unknown sequence is likely a contaminant not from a human and not something of concern for the patient. The contamination likely came from insufficient use of sterile techniques from common ambient bacteria.We would recommend that the clinician ensure that proper sterile techniques are used in future sample collection to minimize the risk of contamination. A probably bacteria could be e.coli (pictured below).
+
+![Image of borrelia burgdorferi]("C:/Users/egavr/OneDrive/Documents/BIOL432/A6/images/image2.jfif")
+
+
